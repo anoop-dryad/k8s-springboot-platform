@@ -107,6 +107,7 @@ jobs:
             -DnvdApiKey="$NVD_API_KEY" \
             -DnvdApiDelay=3000 \
             -DdataDirectory=${{github.workspace}}/dependency-check-data \
+            -DnvdDatafeed=https://jeremylong.github.io/DependencyCheck/dvdhtml.html \
             -Dformats=HTML,SARIF \
             --no-transfer-progress
 
