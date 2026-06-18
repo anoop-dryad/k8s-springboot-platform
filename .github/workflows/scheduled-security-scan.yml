@@ -105,7 +105,7 @@ jobs:
             -DfailBuildOnCVSS=7 \
             -DenableRetired=true \
             -DnvdApiKey="$NVD_API_KEY" \
-            -DnvdApiDelay=1000 \
+            -DnvdApiDelay=3000 \
             -DdataDirectory=${{github.workspace}}/dependency-check-data \
             -Dformats=HTML,SARIF \
             --no-transfer-progress
