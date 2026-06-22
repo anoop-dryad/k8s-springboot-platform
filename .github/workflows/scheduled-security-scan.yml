@@ -97,7 +97,7 @@ jobs:
       # an alert (email/Slack), not a blocked PR. That's the right trade-off:
       # comprehensive coverage without blocking development.
       - name: OWASP Dependency Check
-        timeout-minutes: 30
+        timeout-minutes: 60
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
@@ -105,9 +105,8 @@ jobs:
             -DfailBuildOnCVSS=7 \
             -DenableRetired=true \
             -DnvdApiKey="$NVD_API_KEY" \
-            -DnvdApiDelay=3000 \
+            -DnvdApiDelay=1000 \
             -DdataDirectory=${{github.workspace}}/dependency-check-data \
-            -DnvdDatafeed=https://jeremylong.github.io/DependencyCheck/dvdhtml.html \
             -Dformats=HTML,SARIF \
             --no-transfer-progress
 
