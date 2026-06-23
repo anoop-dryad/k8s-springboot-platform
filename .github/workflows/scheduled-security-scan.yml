@@ -49,7 +49,7 @@ jobs:
   scan:
     name: Scan ${{ matrix.service }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     strategy:
       fail-fast: false # one service's failure shouldn't skip the others
       matrix:
@@ -68,12 +68,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Java 21 (Temurin)
+      - name: Setup Java 25 (Temurin)
         uses: actions/setup-java@v5
         with:
-          java-version: "21"
+          java-version: "25"
           distribution: temurin
           cache: maven
+
+      # ── Verify NVD key is actually reaching the job ────────────────────────
+      # Scheduled runs use main's REPOSITORY secrets. If this prints len=0 the
+      # secret is missing or scoped wrong (environment/dependabot), which is the
+      # usual cause of API throttling. Never print the value itself.
+      - name: Check NVD key present
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          echo "NVD key length = ${#NVD_API_KEY}"
 
       # ── OWASP NVD database cache ───────────────────────────────────────────
       # Key on YEAR-WEEK so the cache refreshes weekly. Daily would also work
@@ -88,9 +98,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{github.workspace}}/dependency-check-data
-          key: owasp-nvd-${{ runner.os }}-${{ steps.cache-key.outputs.week }}
+          key: owasp-nvd-v2-${{ runner.os }}-${{ steps.cache-key.outputs.week }}
           restore-keys: |
-            owasp-nvd-${{ runner.os }}-
+            owasp-nvd-v2-${{ runner.os }}-
 
       # ── OWASP Dependency Check ─────────────────────────────────────────────
       # CVSS ≥ 7 fails the workflow. Since this is nightly, failure means
@@ -105,7 +115,7 @@ jobs:
             -DfailBuildOnCVSS=7 \
             -DenableRetired=true \
             -DnvdApiKey="$NVD_API_KEY" \
-            -DnvdApiDelay=1000 \
+            -DnvdApiDelay=200 \
             -DdataDirectory=${{github.workspace}}/dependency-check-data \
             -Dformats=HTML,SARIF \
             --no-transfer-progress
